@@ -516,6 +516,7 @@ $.ajax({
     url:'../../datatables_init/json_customer.php',
     method: 'post',
     dataType: 'json',
+    cache: true,
     beforeSend: function(){
         $("#ajax_loader").show();
     },

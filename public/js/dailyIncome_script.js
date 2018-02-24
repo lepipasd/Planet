@@ -88,6 +88,7 @@ $(function () {
                                 );
                             },
                             "destroy": true,
+                            "bDeferRender": true,
                             dom: 'lBfrtip',
                             buttons: [
                                 'copy',
