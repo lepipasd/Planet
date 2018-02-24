@@ -10,6 +10,7 @@ class Customer extends DatabaseObject
     // atributes one for each column
     public $id;
     public $name;
+    public $barcode;
     public $gym_id;
     public $telephone;
     // atributes from gym class
@@ -21,8 +22,8 @@ class Customer extends DatabaseObject
      */
     public function create()
     {
-        $sql = "INSERT INTO customer (name, gym_id, telephone) VALUES (?, ?, ?) RETURNING id";
-        $options = array($this->name, $this->gym_id, $this->telephone);
+        $sql = "INSERT INTO customer (name, gym_id, telephone, barcode) VALUES (?, ?, ?, ?) RETURNING id";
+        $options = array($this->name, $this->gym_id, $this->telephone, $this->barcode);
 
         $sth = static::find_by_sql($sql, $options);
 
@@ -35,8 +36,8 @@ class Customer extends DatabaseObject
      */
     public function update()
     {
-        $sql = "UPDATE customer SET name = ?, gym_id = ?, telephone = ? WHERE id = ? RETURNING id";
-        $options = array($this->name, $this->gym_id, $this->telephone, $this->id);
+        $sql = "UPDATE customer SET name = ?, gym_id = ?, telephone = ?, barcode = ? WHERE id = ? RETURNING id";
+        $options = array($this->name, $this->gym_id, $this->telephone, $this->barcode, $this->id);
 
         $sth = static::find_by_sql($sql, $options);
 
@@ -59,7 +60,7 @@ class Customer extends DatabaseObject
      */
     public static function find_customer_full_details_by_id($id)
     {
-        $sql  = "SELECT c.id, c.name, c.gym_id, c.telephone, g.gym_name FROM ";
+        $sql  = "SELECT c.id, c.name, c.barcode, c.gym_id, c.telephone, g.gym_name FROM ";
         $sql .= self::$table_name;
         $sql .= " AS c ";
         $sql .= "INNER JOIN gym g ON c.gym_id = g.gym_id ";
@@ -78,7 +79,7 @@ class Customer extends DatabaseObject
      */
     public static function check_cms_id($cms_id)
     {
-        $sql  = "SELECT c.id, c.name, c.gym_id, c.telephone, c.cms_id, g.gym_name FROM ";
+        $sql  = "SELECT c.id, c.name, c.barcode, c.gym_id, c.telephone, c.cms_id, g.gym_name FROM ";
         $sql .= self::$table_name;
         $sql .= " AS c ";
         $sql .= "INNER JOIN gym g ON c.gym_id = g.gym_id ";
@@ -99,7 +100,7 @@ class Customer extends DatabaseObject
     {
         global $db;
 
-        $sql  = "SELECT c.id, c.name, c.gym_id, c.telephone, g.gym_name FROM ";
+        $sql  = "SELECT c.id, c.name, c.barcode, c.gym_id, c.telephone, g.gym_name FROM ";
         $sql .= self::$table_name;
         $sql .= " AS c ";
         $sql .= "INNER JOIN gym g on c.gym_id = g.gym_id ";
@@ -121,7 +122,7 @@ class Customer extends DatabaseObject
     {
         // global $db;
 
-        $sql  = "SELECT c.id, c.name, c.telephone FROM ";
+        $sql  = "SELECT c.id, c.name, c.barcode, c.telephone FROM ";
         $sql .= self::$table_name;
         $sql .= " AS c ";
         // $sql .= 'ORDER BY c.name collate "C"';
@@ -141,7 +142,7 @@ class Customer extends DatabaseObject
     public static function find_customers_enumeration_by_term($term)
     {
 
-        $sql  = "SELECT c.id, c.name, c.telephone FROM ";
+        $sql  = "SELECT c.id, c.name, c.barcode, c.telephone FROM ";
         $sql .= self::$table_name;
         $sql .= " AS c ";
         // $sql .= "WHERE c.name ILIKE '%" . $term . "%' ";
@@ -162,7 +163,7 @@ class Customer extends DatabaseObject
      */
     public static function find_customers_by_name($name)
     {
-        $sql  = "SELECT c.id, c.name, c.gym_id, c.telephone, g.gym_name FROM ";
+        $sql  = "SELECT c.id, c.name, c.barcode, c.gym_id, c.telephone, g.gym_name FROM ";
         $sql .= self::$table_name;
         $sql .= " AS c ";
         $sql .= "INNER JOIN gym g on c.gym_id = g.gym_id ";
@@ -183,7 +184,7 @@ class Customer extends DatabaseObject
      */
     public static function find_array_of_customers_by_name($name)
     {
-        $sql  = "SELECT c.id, c.name, c.gym_id, c.telephone, g.gym_name FROM ";
+        $sql  = "SELECT c.id, c.name, c.barcode, c.gym_id, c.telephone, g.gym_name FROM ";
         $sql .= self::$table_name;
         $sql .= " AS c ";
         $sql .= "INNER JOIN gym g on c.gym_id = g.gym_id ";
@@ -243,6 +244,18 @@ class Customer extends DatabaseObject
             $msg .= "Telephone: ";
             $msg .= h($this->telephone);
             $msg .= " cannot be blank and must consists of 10 digits.";
+            $msg .= "</li>";
+        }
+
+        $check_barcode = has_presence($this->barcode);
+        $check_barcode_numeric = has_number($this->barcode);
+        $check_barcode_length = has_length($this->barcode, ['exact' => 6]);
+        if (!$check_barcode or !$check_barcode_numeric or !$check_barcode_length) {
+            $passed_validation_tests = false;
+            $msg .= "<li>";
+            $msg .= "Bracode: ";
+            $msg .= h($this->barcode);
+            $msg .= " cannot be blank and must consists of 6 digits.";
             $msg .= "</li>";
         }
 

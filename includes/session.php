@@ -159,7 +159,7 @@ class Session
      */
     public function last_activity_is_recent()
     {
-        $max_elapsed = 60 * 10;
+        $max_elapsed = 60 * 30;
         if (!isset($this->last_activity)) {
             return false;
         }

@@ -6,7 +6,7 @@ if (!$session->is_logged_in() or !$session->is_session_valid()) {
     redirect_to("login.php");
 }
 if (request_is_same_domain() and request_is_post()) {
-    $form_params = ['customer_name', 'gym_id', 'telephoneInput', 'csrf_token', 'csrf_token_time'];
+    $form_params = ['customer_name', 'gym_id', 'telephoneInput', 'barcodeInput', 'csrf_token', 'csrf_token_time'];
     $msg = "";
     $csrf_msg = "";
     // manage form submission for adding a customer
@@ -43,6 +43,7 @@ if (request_is_same_domain() and request_is_post()) {
             $customer = new Customer();
             $customer->name = mb_strtoupper($valid_post_params['customer_name'], "UTF-8");
             $customer->telephone = $valid_post_params['telephoneInput'];
+            $customer->barcode = $valid_post_params['barcodeInput'];
             $customer->gym_id = $check_gym_id->gym_id;
             $msg = $customer->validate_customer_input_fields();
         }
@@ -61,7 +62,7 @@ if (request_is_same_domain() and request_is_post()) {
             redirect_to("mngCustomers.php");
         }
     }
-    $form_edit_params = ['edit_customer_id', 'edit_customer_name', 'edit_telephone', 'edit_gym_id'];
+    $form_edit_params = ['edit_customer_id', 'edit_customer_name', 'edit_telephone', 'edit_gym_id', 'edit_barcode'];
     // manage modal-form submission for editing user details
     if (isset($_POST['edit_customer'])) {
         if ($session->csrf_token_is_valid()) {
@@ -101,6 +102,7 @@ if (request_is_same_domain() and request_is_post()) {
             $customer_edit->id = $valid_post_edit_params['edit_customer_id'];
             $customer_edit->name = mb_strtoupper($valid_post_edit_params['edit_customer_name'], "UTF-8");
             $customer_edit->telephone = $valid_post_edit_params['edit_telephone'];
+            $customer_edit->barcode = $valid_post_edit_params['edit_barcode'];
             $customer_edit->gym_id = $valid_post_edit_params['edit_gym_id'];
             $msg = $customer_edit->validate_customer_input_fields();
         }
@@ -278,22 +280,40 @@ include('../../includes/layouts/menu.php');
                 </div><!-- /.form-group row form_space has-feedback --> 
 
                 <div class="form-group row form_space has-feedback">
-                <label for="telephoneInput" class="col-xs-2 col-form-label">ΤΗΛΕΦΩΝΟ:
-                </label>
-                <div class="col-xs-10">
-                  <div class="input-group">
-                    <span class="input-group-addon">
-                      <span class="glyphicon glyphicon-phone-alt"></span>
-                    </span>
-                    <input class="form-control" type="text" name="telephoneInput"
-                    id="telephoneInput" pattern="[0-9]{10}$" maxlength=10 
-                    data-error="Phone number cannot be blank and must consists of 
-                    exactly 10 digits." required>
-                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
-                  </div><!-- /.input-group -->
-                  <div class="help-block with-errors">Enter customer phone number.</div>
-                </div><!-- /.col-xs-10 --> 
-              </div><!-- /.form-group row form_space has-feedback -->
+                    <label for="telephoneInput" class="col-xs-2 col-form-label">ΤΗΛΕΦΩΝΟ:
+                    </label>
+                    <div class="col-xs-10">
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                              <span class="glyphicon glyphicon-phone-alt"></span>
+                            </span>
+                            <input class="form-control" type="text" name="telephoneInput"
+                            id="telephoneInput" pattern="[0-9]{10}$" maxlength=10 
+                            data-error="Phone number cannot be blank and must consists of 
+                            exactly 10 digits." required>
+                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                        </div><!-- /.input-group -->
+                        <div class="help-block with-errors">Enter customer phone number.</div>
+                    </div><!-- /.col-xs-10 --> 
+                </div><!-- /.form-group row form_space has-feedback -->
+
+                <div class="form-group row form_space has-feedback">
+                    <label for="barcodeInput" class="col-xs-2 col-form-label">BARCODE:
+                    </label>
+                    <div class="col-xs-10">
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="fa fa-barcode"></i>
+                            </span>
+                            <input class="form-control" type="text" name="barcodeInput"
+                            id="barcodeInput" pattern="[0-9]{6}$" maxlength=6 
+                            data-error="Barcode cannot be blank and must consists of 
+                            exactly 6 digits." required>
+                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                        </div><!-- /.input-group -->
+                        <div class="help-block with-errors">Enter barcode number.</div>
+                    </div><!-- /.col-xs-10 --> 
+                </div><!-- /.form-group row form_space has-feedback -->
 
                 <div class="form-group row form_space has-feedback">
                   <label for="gym_name" class="col-xs-2 col-form-label">ΓΥΜΝΑΣΤΗΡΙΟ:</label>
@@ -339,6 +359,7 @@ include('../../includes/layouts/menu.php');
             <tr class="tablehead">
               <th>Name</th>
               <th>Telephone</th>
+              <th>Barcode</th>
               <th>Gym Name</th>
               <th></th>
               <th></th>
@@ -346,7 +367,7 @@ include('../../includes/layouts/menu.php');
           </thead>
           <tfoot>
             <tr>
-              <th colspan="2"></th>
+              <th colspan="3"></th>
               <th colspan="1" id="searchgym"">Gym Name</th>
               <th colspan="2"></th>
             </tr>
@@ -439,6 +460,22 @@ include('../../includes/layouts/menu.php');
           </div><!-- /.form-group row form_space -->
 
           <div class="form-group row form_space has-feedback">
+            <label for="edit_barcode" class="col-xs-2 col-form-label">BARCODE:</label>
+            <div class="col-xs-10">
+              <div class="input-group">
+                <span class="input-group-addon">
+                    <i class="fa fa-barcode"></i>
+                </span>
+                <input class="form-control" type="text" name="edit_barcode" id="edit_barcode"
+                pattern="[0-9]{6}$" maxlength=6 data-error="Barcode cannot 
+                be blank and must consists of exactly 6 digits." required>
+                <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+              </div><!-- /.input-group -->
+              <div class="help-block with-errors">Enter barcode number.</div>
+            </div><!-- /.col-xs-10 --> 
+          </div><!-- /.form-group row form_space -->
+
+          <div class="form-group row form_space has-feedback">
             <label for="edit_gym_id" class="col-xs-2 col-form-label">ΓΥΜΝΑΣΤΗΡΙΟ:</label>
             <div class="col-xs-10">
               <div class="input-group">
@@ -470,7 +507,7 @@ $(function () {
     // Setup - add a text input to each footer cell
 $('#searchgym').each(function(){
 
-  var title = $('#json_gym thead th').eq($(this).index()+1).text();
+  var title = $('#json_gym thead th').eq($(this).index()+2).text();
           
   $(this).html('<input type="text" placeholder="Search ' + title + '"/>');
 });
@@ -488,6 +525,7 @@ $.ajax({
     success: function(data) {
     var table = $('#json_gym').DataTable({
       "destroy": true,
+      "bDeferRender": true,
       dom: 'lBfrtip',
       buttons: [
         'copy',
@@ -501,13 +539,14 @@ $.ajax({
       columns: [
         {'data': 'name'},
         {'data': 'telephone'},
+        {'data': 'barcode'},
         {'data': 'gym_name'},
         {'data': 'id'},
         {'data': 'id'},
       ],
       columnDefs: [
         {
-          targets: 3,
+          targets: 4,
           orderable: false,
           searchable: false,
           className: 'dt-body-center',
@@ -523,7 +562,7 @@ $.ajax({
           }
         },
         {
-          targets: 4,
+          targets: 5,
           orderable: false,
           searchable: false,
           className: 'dt-body-center',
@@ -539,20 +578,13 @@ $.ajax({
         }
       ],
     }); // DataTable ends here
-    table.column(1).every(function(){
+    table.column(3).every(function(){
       var tableColumn = this;
 
       $(this.footer()).find('input').on('keyup change', function(){
 
         var term = $(this).val();
-          // regExSearch = '^' + term +'$';
-          // regExSearch_all = '[\s\S]*';
-        tableColumn.search(term).draw();
-          // if (term) {
-          //   tableColumn.search(regExSearch, true, false).draw();
-          // } else {
-          //   tableColumn.search(regExSearch_all, true, false).draw();
-          // }                      
+        tableColumn.search(term).draw();                   
       });          
     });
   } // success function ends here
@@ -605,6 +637,7 @@ $('#editcustomer').on('show.bs.modal', function (event) {
         modal.find('.modal-title').text('Edit Customer: ' + data.customer.name);
         modal.find('.modal-body input#edit_customer_id[type="hidden"]').val(recipient);
         modal.find('.modal-body input[name="edit_customer_name"]').val(data.customer.name);
+        modal.find('.modal-body input[name="edit_barcode"]').val(data.customer.barcode);
         modal.find('.modal-body input[name="edit_telephone"]').val(data.customer.telephone);
 
         var select = document.getElementById("edit_gym_id");
@@ -635,4 +668,3 @@ if (isset($db)) {
     $db->close_connection();
 }
 ?>
-
