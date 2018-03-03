@@ -60,5 +60,6 @@
     <script type="text/javascript" src="../js/vfs_fonts.js"></script>
     <script type="text/javascript" src="../js/buttons.html5.min.js"></script> 
     <script type="text/javascript" src="../js/buttons.print.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap-filestyle.min.js"></script>
   </head>
   <body>
