@@ -67,8 +67,11 @@ if (request_is_same_domain() and request_is_post()) {
     $data_table['number_of_income'] = intval($sum_by_gym->number_of_income);
     $data_table['price_agreed'] = floatval($sum_by_gym->price_agreed);
     $data_table['price_paied'] = floatval($sum_by_gym->price_paied);
-
-    $data_table['price_paied_cash'] = floatval($sum_of_cash_by_gym->price_paied);
+    if ($sum_of_cash_by_gym) {
+        $data_table['price_paied_cash'] = floatval($sum_of_cash_by_gym->price_paied);
+    } else {
+        $data_table['price_paied_cash'] = 0.0;
+    }
 
     foreach ($income_reports as $income_report) {
         $data[$income_report->income_name]['datetime'] = $income_report->datetime;
