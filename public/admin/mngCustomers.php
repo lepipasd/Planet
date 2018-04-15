@@ -6,7 +6,8 @@ if (!$session->is_logged_in() or !$session->is_session_valid()) {
     redirect_to("login.php");
 }
 if (request_is_same_domain() and request_is_post()) {
-    $form_params = ['customer_name', 'gym_id', 'telephoneInput', 'barcodeInput', 'csrf_token', 'csrf_token_time'];
+    $form_params = ['customer_name', 'gym_id', 'telephoneInput', 'barcodeInput',
+                    'snapshot_data', 'csrf_token', 'csrf_token_time'];
     $msg = "";
     $csrf_msg = "";
     // manage form submission for adding a customer
@@ -46,14 +47,27 @@ if (request_is_same_domain() and request_is_post()) {
             $customer->barcode = $valid_post_params['barcodeInput'];
             $customer->gym_id = $check_gym_id->gym_id;
             $msg = $customer->validate_customer_input_fields();
+            $encoded_data = $valid_post_params['snapshot_data'];
+            $binary_data = base64_decode($encoded_data);
         }
         
         if ($msg == "") {
             $result = $customer->save();
+            $snapshot_name = '/var/www/html/stefanos/uploads/snapshot_' . $result . '.png';
             $msg .= $csrf_msg;
             $msg .= "Passed Validation Tests. ";
             $msg .= "Customer created with id: ";
             $msg .= $result;
+            $res = file_put_contents($snapshot_name, $binary_data);
+            if (!$res) {
+                $msg .= "<br/>No image uploaded.";
+            } else {
+                $msg .= "<br/>Snapshot saved succesfully, path: " . $snapshot_name;
+                $customer->id = $result;
+                $customer->image_path = $snapshot_name;
+                $ret = $customer->save();
+                $msg .= " RETURNED_ID=" . $ret;
+            }
 
             $session->message($msg);
             redirect_to("mngCustomers.php");
@@ -245,7 +259,8 @@ include('../../includes/layouts/menu.php');
       <div class="panel-heading">
         <h3 class="panel-title" style="color: #476692">Management Customer</h3>
       </div><!-- /.panel-heading -->
-      <form data-toggle="validator" class="form-horizontal" action="mngCustomers.php" method="post">
+      <form data-toggle="validator" id="customer_form" class="form-horizontal" 
+      action="mngCustomers.php" method="post" enctype="multipart/form-data">
         <div class="panel-body">
 
           <div class="col-md-12">
@@ -313,6 +328,26 @@ include('../../includes/layouts/menu.php');
                         </div><!-- /.input-group -->
                         <div class="help-block with-errors">Enter barcode number.</div>
                     </div><!-- /.col-xs-10 --> 
+                </div><!-- /.form-group row form_space has-feedback -->
+
+                <div class="form-group row form_space">
+                    <label for="imgInput" class="col-xs-2 col-form-label">SNAPSHOT:
+                    </label>
+                    <div class="col-xs-10">
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="fa fa-camera-retro"></i>
+                            </span>
+                            <input class="form-control" type=button name="imgInput" value="Take Snapshot" onClick="take_snapshot()">
+                            <input id="snapshot_data" type="hidden" name="snapshot_data" value=""/>
+                        </div><!-- /.input-group -->
+                        <div class="help-block with-errors">Take snapshot.</div>
+                        <div class="col-xs-12" style="margin-bottom: 20px;">
+                            <div class="col-xs-3 col-xs-offset-1" id="my_camera" style="width:260; height:180;"></div>
+                            <div class="col-xs-3 col-xs-offset-3" id="my_result" 
+                            style="padding-left: 20px;">HERE THE IMAGE WILL BE DISPLAYED</div>
+                        </div>
+                    </div><!-- /.col-xs-10 -->
                 </div><!-- /.form-group row form_space has-feedback -->
 
                 <div class="form-group row form_space has-feedback">
@@ -500,10 +535,29 @@ include('../../includes/layouts/menu.php');
         </form>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
-</div><!-- /.modal --> 
+</div><!-- /.modal -->
+
+<script type="text/javascript">
+function take_snapshot() {
+    Webcam.snap( function(data_uri) {
+        document.getElementById('my_result').innerHTML = '<img src="'+data_uri+'"/>';
+        var raw_image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
+        document.getElementById('snapshot_data').value = raw_image_data;
+    });
+}   
+</script>
  
 <script type="text/javascript">
-$(function () { 
+$(function () {
+
+Webcam.set({
+    width: 240,
+    height: 180,
+    image_format: 'png',
+    jpeg_quality: 90
+});
+Webcam.attach( '#my_camera' );
+
     // Setup - add a text input to each footer cell
 $('#searchgym').each(function(){
 
