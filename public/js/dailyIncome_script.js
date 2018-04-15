@@ -1,4 +1,11 @@
 $(function () {
+    Webcam.set({
+        width: 240,
+        height: 180,
+        image_format: 'png',
+        jpeg_quality: 90
+    });
+    Webcam.attach( '#my_camera' );
     $('input[name="daterange"]').daterangepicker({
         locale: { format: 'YYYY-MM-DD' }
     });
