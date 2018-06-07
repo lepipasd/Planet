@@ -1,0 +1,10 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Portal\\": "src/Portal"
+        }
+    },
+    "require": {
+        "cboden/ratchet": "^0.4"
+    }
+}
