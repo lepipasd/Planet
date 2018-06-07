@@ -21,6 +21,7 @@ require_once(LIB_PATH.DS.'initialize.php');
       <div class="collapse navbar-collapse" id="navbar">
         <ul class="nav navbar-nav pull-right">
           <li><a href="index.php" id="home" class="menu_buttons_icon btn btn-default glyphicon glyphicon-home"></a></li>              
+          <li><a href="planetSocket.php" id="socket" class="menu_buttons_icon btn btn-default"><i class="fa fa-road"></i></a></li>              
             <?php
             if ($session->role_id != 1) {
                 echo Navigation::display_menu(0, 4, $session->role_id);

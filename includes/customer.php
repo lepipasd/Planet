@@ -165,6 +165,25 @@ class Customer extends DatabaseObject
      * Description
      * @return generator of customer objects
      */
+    public static function find_customers_by_barcode($barcode)
+    {
+        $sql  = "SELECT c.id, c.name, c.barcode, c.image_path, c.gym_id, c.telephone, g.gym_name FROM ";
+        $sql .= self::$table_name;
+        $sql .= " AS c ";
+        $sql .= "INNER JOIN gym g on c.gym_id = g.gym_id ";
+        $sql .= "AND c.barcode = ? ";
+        $sql .= 'LIMIT 1';
+        $options = array($barcode);
+
+        $sth = self::find_by_sql($sql, $options);
+
+        return !empty($sth) ? $sth[0] : false;
+    }
+
+    /**//**
+     * Description
+     * @return generator of customer objects
+     */
     public static function find_customers_by_name($name)
     {
         $sql  = "SELECT c.id, c.name, c.barcode, c.image_path, c.gym_id, c.telephone, g.gym_name FROM ";
